@@ -1,0 +1,107 @@
+---
+title: "Continous Assessment 1"
+subtitle: ' Ciaran Darcy,  D10123132, d10123132@mydit.ie'
+output:
+  html_notebook: default
+  pdf_document: default
+  word_document: default
+---
+
+Part One
+```{r}
+prob <- 0.15
+Sample <- 7
+```
+
+**Q1** *Find the expected number of people that will develop a Condition*
+
+Knowing that
+$$E(x)=np$$
+
+```{r}
+Binomial_expected <- function(prob, size) {
+  E=size*prob
+  return(E)
+}
+
+Expected_value=Binomial_expected(prob, Sample)
+Expected_value
+```
+
+**Q2** *Find the probability that exactly 4 smokers of the sample will develop a severe lung condition.*
+
+The easiest way to calculate this manually is with the **Probability Mass Function** forumla:
+$$\Pr(X = x) = f(x) = \binom{n}{x} p^x (1-p)^{n-x},$$
+which is the same as the *pbinomial(x = x, n=sample, p=prob)*
+```{r}
+dbinom(4,size=Sample, p=prob)
+```
+There is a way to verify that this is the correct value: We can use the **Cumulative Distribution Function** formula and the axiom
+$$F(x) = \Pr(X \leq x) = \sum_{i = 0}^{\lfloor{x}\rfloor}\binom{n}{i} p^i (1-p)^{n-i}$$
+$$f(x)=F(x)-F(x-1)$$
+so in this case we can use *pbinom(x = x, n=sample, p=prob)*`
+```{r}
+pbinom(4,size=Sample, prob = prob)-pbinom(3, size=Sample, prob=prob)
+```
+Since both give the same answer we can be confident that this is the correct number
+
+**Q3** *Find the probability that more than 2 smokers of the sample will develop a severe lung condition.*
+
+Again we have 2 ways to find this:
+One uses the fact that 
+$$\Pr(X > x) = 1-F(x)$$
+So we can find the CDF and take one from it 
+
+```{r}
+greater3<-1-pbinom(2, size=Sample, prob=prob)
+greater3
+
+```
+The second, more computationally intensive method involves 
+summing the PMFs together 
+
+$$Pr(X > x) =  \sum_{i = x+1}^{Max Size} f(i) $$
+```{r}
+sum(dbinom(3:Sample, size = Sample, prob=prob))
+
+```
+Again they match 
+
+**Q4** *Find the probability that at least 3 but less than 6 smokers of the sample will develop a severe lung condition.*
+
+In this case the we want 
+$$Pr(3 \le x < 6 )$$
+First thing to note is that 
+$$Pr(x<X)= F(x-1)$$
+Secondly we know that 
+$$Pr(X\le x \le Y ) = F(Y)-F(X-1)$$
+so we can use
+```{r}
+pbinom(5, size=Sample, prob=prob) - pbinom(2, size=Sample, prob = prob)
+
+```
+or again we can sum the probabilities being careful to note that it goes to 5 because the question explicity says less than
+```{r}
+between_3and6 <- sum(dbinom(3:5, size = Sample, prob=prob))
+between_3and6
+
+```
+**Q5**  *Find the conditional probability that no more than 5 smokers of the sample will develop a severe lung condition given that more than 3 smokers of the sample will develop a severe lung condition.*
+
+For this we need to make use of a number of function and capabilities and axioms
+
+Firstly the conditional probability forumla
+
+$$\Pr(A | B) = \frac{\Pr(A \cap B)}{\Pr(B)}.$$
+so we can infer that 
+
+$$\Pr(X\le 5 | X > 3) = \frac{\Pr(3 \le X < 6 ))}{\Pr(X > 3)}.$$
+
+As we have already calcluated both of these all we need to do is apply the formula
+```{r}
+between_3and6/greater3
+
+```
+**Q6** *Create a barplot of the PMF of the random variable representing the number of smokers of the sample who will develop a severe lung condition.*
+
+
